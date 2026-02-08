@@ -11,7 +11,7 @@ pipeline {
 
         stage('Run Container') {
             steps {
-                sh 'docker run -d -p 8080:80 mysite || true'
+                sh 'docker run -d -p 8082:80 mysite || true'
             }
         }
     }
