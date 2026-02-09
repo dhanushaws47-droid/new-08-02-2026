@@ -1,17 +1,27 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE = "dhanushdock1/mysite:${BUILD_NUMBER}"
+    }
+
     stages {
 
-        stage('Build Docker Image') {
+        stage('Build') {
             steps {
-                sh 'docker build -t mysite .'
+                echo 'Building app...'
             }
         }
 
-        stage('Run Container') {
+        stage('Docker Build') {
             steps {
-                sh 'docker run -d -p 8082:80 mysite || true'
+                sh 'docker build -t $IMAGE .'
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                sh 'docker push $IMAGE'
             }
         }
     }
