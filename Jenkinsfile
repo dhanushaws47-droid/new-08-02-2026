@@ -29,7 +29,7 @@ pipeline {
 
         stage('Run Container') {
             steps {
-                sh 'docker run -d --name $CONTAINER -p 8080:80 $IMAGE'
+                sh 'docker run -d --name $CONTAINER -p 8082:80 $IMAGE'
             }
         }
     }
