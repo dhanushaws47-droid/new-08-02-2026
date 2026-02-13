@@ -1,38 +1,39 @@
 pipeline {
-agent any
+    agent any
 
-```
-environment {
-    IMAGE = "dhanushdock1/mysite:${BUILD_NUMBER}"
-}
-
-stages {
-
-    stage('Build Docker Image') {
-        steps {
-            sh 'docker build -t $IMAGE .'
-        }
+    environment {
+        IMAGE = "dhanushdock1/mysite:${BUILD_NUMBER}"
+        CONTAINER = "mysite"
+        SERVER = "ec2-user@13.61.0.189"
     }
 
-    stage('Push to DockerHub') {
-        steps {
-            sh 'docker push $IMAGE'
+    stages {
+
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t $IMAGE .'
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                sh 'docker push $IMAGE'
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                sshagent(['ec2-key']) {
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no $SERVER "
+                        docker pull $IMAGE &&
+                        docker stop $CONTAINER || true &&
+                        docker rm $CONTAINER || true &&
+                        docker run -d -p 80:80 --name $CONTAINER $IMAGE
+                    "
+                    '''
+                }
+            }
         }
     }
-
-    stage('Deploy to EC2') {
-        steps {
-            sh """
-            ssh -o StrictHostKeyChecking=no -i ~/key.pem ec2-user@13.61.0.189 '
-                docker pull $IMAGE
-                docker stop mysite || true
-                docker rm mysite || true
-                docker run -d --name mysite -p 80:80 $IMAGE
-            '
-            """
-        }
-    }
-}
-```
-
 }
